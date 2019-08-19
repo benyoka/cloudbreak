@@ -41,11 +41,14 @@ public class ClusterProxyDeregisterHandler implements EventHandler<ClusterProxyD
         ClusterProxyDeregisterRequest request = requestEvent.getData();
         Stack stack = stackService.getByIdWithListsInTransaction(request.getResourceId());
         if (clusterProxyIntegrationEnabled) {
+            LOGGER.debug("Cluster Proxy Integration enabled. Deregistering FreeIpa [{}]", request.getResourceId());
             try {
                 clusterProxyService.deregisterCluster(stack);
             } catch (Exception ex) {
                 LOGGER.error("Cluster proxy deregister failed", ex);
             }
+        } else {
+            LOGGER.debug("Cluster Proxy Integration disabled. Skipping deregistering FreeIpa [{}]", request.getResourceId());
         }
         Selectable result = new ClusterProxyDeregisterSuccess(stack.getId());
         eventBus.notify(result.selector(), new Event<>(requestEvent.getHeaders(), result));
