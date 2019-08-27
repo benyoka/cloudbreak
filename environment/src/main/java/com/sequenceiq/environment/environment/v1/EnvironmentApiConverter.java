@@ -14,6 +14,9 @@ import com.sequenceiq.cloudbreak.cloud.model.CloudSubnet;
 import com.sequenceiq.cloudbreak.util.NullUtil;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkAwsParams;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkAzureParams;
+import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkCumulusYarnParams;
+import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkGcpParams;
+import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkOpenstackParams;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkMockParams;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkYarnParams;
 import com.sequenceiq.environment.api.v1.environment.model.base.PrivateSubnetCreation;
@@ -26,6 +29,11 @@ import com.sequenceiq.environment.api.v1.environment.model.request.LocationReque
 import com.sequenceiq.environment.api.v1.environment.model.request.SecurityAccessRequest;
 import com.sequenceiq.environment.api.v1.environment.model.request.aws.AwsEnvironmentParameters;
 import com.sequenceiq.environment.api.v1.environment.model.request.aws.S3GuardRequestParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.azure.AzureEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.cumulus.CumulusEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.gcp.GcpEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.openstack.OpenstackEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.yarn.YarnEnvironmentParameters;
 import com.sequenceiq.environment.api.v1.environment.model.response.DetailedEnvironmentResponse;
 import com.sequenceiq.environment.api.v1.environment.model.response.EnvironmentAuthenticationResponse;
 import com.sequenceiq.environment.api.v1.environment.model.response.EnvironmentNetworkResponse;
@@ -47,7 +55,12 @@ import com.sequenceiq.environment.network.dto.AzureParams;
 import com.sequenceiq.environment.network.dto.NetworkDto;
 import com.sequenceiq.environment.network.dto.YarnParams;
 import com.sequenceiq.environment.parameters.dto.AwsParametersDto;
+import com.sequenceiq.environment.parameters.dto.AzureParametersDto;
+import com.sequenceiq.environment.parameters.dto.CumulusYarnParametersDto;
+import com.sequenceiq.environment.parameters.dto.GcpParametersDto;
+import com.sequenceiq.environment.parameters.dto.OpenstackParametersDto;
 import com.sequenceiq.environment.parameters.dto.ParametersDto;
+import com.sequenceiq.environment.parameters.dto.YarnParametersDto;
 import com.sequenceiq.sdx.api.endpoint.SdxEndpoint;
 
 @Component
@@ -101,7 +114,12 @@ public class EnvironmentApiConverter {
                 .withAuthentication(authenticationRequestToDto(request.getAuthentication()))
                 .withIdBrokerMappingSource(request.getIdBrokerMappingSource())
                 .withAdminGroupName(request.getAdminGroupName())
-                .withParameters(getIfNotNull(request.getAws(), this::awsParamsToParametersDto));
+                .withParameters(getIfNotNull(request.getAws(), this::awsParamsToParametersDto))
+                .withParameters(getIfNotNull(request.getAzure(), this::azureParamsToParametersDto))
+                .withParameters(getIfNotNull(request.getGcp(), this::gcpParamsToParametersDto))
+                .withParameters(getIfNotNull(request.getOpenstack(), this::openstackParamsToParametersDto))
+                .withParameters(getIfNotNull(request.getYarn(), this::yarnParamsToParametersDto))
+                .withParameters(getIfNotNull(request.getCumulus(), this::cumulusParamsToParametersDto));
 
         NullUtil.doIfNotNull(request.getNetwork(), network -> builder.withNetwork(networkRequestToDto(network)));
         NullUtil.doIfNotNull(request.getSecurityAccess(), securityAccess -> builder.withSecurityAccess(securityAccessRequestToDto(securityAccess)));
@@ -127,6 +145,62 @@ public class EnvironmentApiConverter {
                 .withDynamoDbTableName(getIfNotNull(aws.getS3guard(), S3GuardRequestParameters::getDynamoDbTableName))
                 .build();
     }
+
+    private ParametersDto azureParamsToParametersDto(AzureEnvironmentParameters azure) {
+        return ParametersDto.builder()
+                .withAzureParameters(azureParamsToAzureParameters(azure))
+                .build();
+    }
+
+    private AzureParametersDto azureParamsToAzureParameters(AzureEnvironmentParameters azure) {
+        return AzureParametersDto.builder()
+                .build();
+    }
+
+    private ParametersDto openstackParamsToParametersDto(OpenstackEnvironmentParameters openstack) {
+        return ParametersDto.builder()
+                .withOpenstackParameters(openstackParamsToOpenstackParameters(openstack))
+                .build();
+    }
+
+    private OpenstackParametersDto openstackParamsToOpenstackParameters(OpenstackEnvironmentParameters openstack) {
+        return OpenstackParametersDto.builder()
+                .build();
+    }
+
+    private ParametersDto gcpParamsToParametersDto(GcpEnvironmentParameters gcp) {
+        return ParametersDto.builder()
+                .withGcpParameters(gcpParamsToGcpParameters(gcp))
+                .build();
+    }
+
+    private GcpParametersDto gcpParamsToGcpParameters(GcpEnvironmentParameters gcp) {
+        return GcpParametersDto.builder()
+                .build();
+    }
+
+    private ParametersDto yarnParamsToParametersDto(YarnEnvironmentParameters yarn) {
+        return ParametersDto.builder()
+                .withYarnParameters(yarnParamsToYarnParameters(yarn))
+                .build();
+    }
+
+    private YarnParametersDto yarnParamsToYarnParameters(YarnEnvironmentParameters yarn) {
+        return YarnParametersDto.builder()
+                .build();
+    }
+
+    private ParametersDto cumulusParamsToParametersDto(CumulusEnvironmentParameters cumulus) {
+        return ParametersDto.builder()
+                .withCumulusYarnParameters(cumulusParamsToCumulusParameters(cumulus))
+                .build();
+    }
+
+    private CumulusYarnParametersDto cumulusParamsToCumulusParameters(CumulusEnvironmentParameters cumulus) {
+        return CumulusYarnParametersDto.builder()
+                .build();
+    }
+
 
     public LocationDto locationRequestToDto(LocationRequest location) {
         return LocationDto.LocationDtoBuilder.aLocationDto()
@@ -162,6 +236,15 @@ public class EnvironmentApiConverter {
                 .collect(Collectors.toMap(id -> id, id -> new CloudSubnet(id, id))));
         }
         builder.withPrivateSubnetCreation(getPrivateSubnetCreation(network));
+        if (network.getCumulus() != null) {
+            builder.withCumulus(null);
+        }
+        if (network.getGcp() != null) {
+            builder.withGcp(null);
+        }
+        if (network.getOpenstack() != null) {
+            builder.withOpenstack(null);
+        }
         return builder
                 .withNetworkCidr(network.getNetworkCidr())
                 .build();
@@ -212,7 +295,12 @@ public class EnvironmentApiConverter {
                 .withRegions(regionConverter.convertRegions(environmentDto.getRegionSet()))
                 .withIdBrokerMappingSource(environmentDto.getIdBrokerMappingSource())
                 .withAdminGroupName(environmentDto.getAdminGroupName())
-                .withAws(getIfNotNull(environmentDto.getParameters(), this::awsEnvParamsToAwsEnvironmentParams));
+                .withAws(getIfNotNull(environmentDto.getParameters(), this::awsEnvParamsToAwsEnvironmentParams))
+                .withAzure(getIfNotNull(environmentDto.getParameters(), this::azureEnvParamsToAzureEnvironmentParams))
+                .withOpenstack(getIfNotNull(environmentDto.getParameters(), this::openstackEnvParamsToOpenstackEnvironmentParams))
+                .withGcp(getIfNotNull(environmentDto.getParameters(), this::gcpEnvParamsToGcpEnvironmentParams))
+                .withYarn(getIfNotNull(environmentDto.getParameters(), this::yarnEnvParamsToYarnEnvironmentParams))
+                .withCumulus(getIfNotNull(environmentDto.getParameters(), this::cumulusEnvParamsToCumulusEnvironmentParams));
 
         NullUtil.doIfNotNull(environmentDto.getNetwork(), network -> builder.withNetwork(networkDtoToResponse(network)));
         NullUtil.doIfNotNull(environmentDto.getSecurityAccess(), securityAccess -> builder.withSecurityAccess(securityAccessDtoToResponse(securityAccess)));
@@ -235,7 +323,12 @@ public class EnvironmentApiConverter {
                 .withAdminGroupName(environmentDto.getAdminGroupName())
                 .withTelemetry(telemetryApiConverter.convert(environmentDto.getTelemetry()))
                 .withRegions(regionConverter.convertRegions(environmentDto.getRegionSet()))
-                .withAws(getIfNotNull(environmentDto.getParameters(), this::awsEnvParamsToAwsEnvironmentParams));
+                .withAws(getIfNotNull(environmentDto.getParameters(), this::awsEnvParamsToAwsEnvironmentParams))
+                .withAzure(getIfNotNull(environmentDto.getParameters(), this::azureEnvParamsToAzureEnvironmentParams))
+                .withGcp(getIfNotNull(environmentDto.getParameters(), this::gcpEnvParamsToGcpEnvironmentParams))
+                .withOpenstack(getIfNotNull(environmentDto.getParameters(), this::openstackEnvParamsToOpenstackEnvironmentParams))
+                .withYarn(getIfNotNull(environmentDto.getParameters(), this::yarnEnvParamsToYarnEnvironmentParams))
+                .withCumulus(getIfNotNull(environmentDto.getParameters(), this::cumulusEnvParamsToCumulusEnvironmentParams));
 
         NullUtil.doIfNotNull(environmentDto.getNetwork(), network -> builder.withNetwork(networkDtoToResponse(network)));
         return builder.build();
@@ -250,6 +343,31 @@ public class EnvironmentApiConverter {
     private S3GuardRequestParameters awsParametersToS3guardParam(AwsParametersDto awsParametersDto) {
         return S3GuardRequestParameters.builder()
                 .withDynamoDbTableName(awsParametersDto.getS3GuardTableName())
+                .build();
+    }
+
+    private AzureEnvironmentParameters azureEnvParamsToAzureEnvironmentParams(ParametersDto parameters) {
+        return AzureEnvironmentParameters.builder()
+                .build();
+    }
+
+    private GcpEnvironmentParameters gcpEnvParamsToGcpEnvironmentParams(ParametersDto parameters) {
+        return GcpEnvironmentParameters.builder()
+                .build();
+    }
+
+    private OpenstackEnvironmentParameters openstackEnvParamsToOpenstackEnvironmentParams(ParametersDto parameters) {
+        return OpenstackEnvironmentParameters.builder()
+                .build();
+    }
+
+    private YarnEnvironmentParameters yarnEnvParamsToYarnEnvironmentParams(ParametersDto parameters) {
+        return YarnEnvironmentParameters.builder()
+                .build();
+    }
+
+    private CumulusEnvironmentParameters cumulusEnvParamsToCumulusEnvironmentParams(ParametersDto parameters) {
+        return CumulusEnvironmentParameters.builder()
                 .build();
     }
 
@@ -273,6 +391,16 @@ public class EnvironmentApiConverter {
                         .build()))
                 .withYarn(getIfNotNull(network.getYarn(), p -> EnvironmentNetworkYarnParams.EnvironmentNetworkYarnParamsBuilder
                         .anEnvironmentNetworkYarnParams()
+                        .withQueue(p.getQueue())
+                        .build()))
+                .withGcp(getIfNotNull(network.getYarn(), p -> EnvironmentNetworkGcpParams.EnvironmentNetworkGcpParamsBuilder
+                        .anEnvironmentNetworkGcpParamsBuilder()
+                        .build()))
+                .withOpenstack(getIfNotNull(network.getYarn(), p -> EnvironmentNetworkOpenstackParams.EnvironmentNetworkOpenstackParamsBuilder
+                        .anEnvironmentNetworkOpenstackParamsBuilder()
+                        .build()))
+                .withCumulus(getIfNotNull(network.getCumulus(), p -> EnvironmentNetworkCumulusYarnParams.EnvironmentNetworkCumulusYarnParamsBuilder
+                        .anEnvironmentNetworkCumulusYarnParams()
                         .withQueue(p.getQueue())
                         .build()))
                 .withMock(getIfNotNull(network.getMock(), p -> EnvironmentNetworkMockParams.EnvironmentNetworkMockParamsBuilder
@@ -305,6 +433,11 @@ public class EnvironmentApiConverter {
         NullUtil.doIfNotNull(request.getTelemetry(), telemetryRequest -> builder.withTelemetry(telemetryApiConverter.convert(request.getTelemetry())));
         NullUtil.doIfNotNull(request.getSecurityAccess(), securityAccess -> builder.withSecurityAccess(securityAccessRequestToDto(securityAccess)));
         NullUtil.doIfNotNull(request.getAws(), awsParams -> builder.withParameters(awsParamsToParametersDto(awsParams)));
+        NullUtil.doIfNotNull(request.getAzure(), azureParams -> builder.withParameters(azureParamsToParametersDto(azureParams)));
+        NullUtil.doIfNotNull(request.getGcp(), gcpParams -> builder.withParameters(gcpParamsToParametersDto(gcpParams)));
+        NullUtil.doIfNotNull(request.getOpenstack(), openstackParams -> builder.withParameters(openstackParamsToParametersDto(openstackParams)));
+        NullUtil.doIfNotNull(request.getYarn(), yarnParams -> builder.withParameters(yarnParamsToParametersDto(yarnParams)));
+        NullUtil.doIfNotNull(request.getCumulus(), cumulusParams -> builder.withParameters(cumulusParamsToParametersDto(cumulusParams)));
         return builder.build();
     }
 

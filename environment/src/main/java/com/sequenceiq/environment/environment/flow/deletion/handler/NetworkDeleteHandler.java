@@ -5,6 +5,7 @@ import static com.sequenceiq.environment.environment.flow.deletion.event.EnvDele
 
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Strings;
 import com.sequenceiq.environment.environment.dto.EnvironmentDto;
 import com.sequenceiq.environment.environment.dto.EnvironmentDtoConverter;
 import com.sequenceiq.environment.environment.flow.deletion.event.EnvDeleteEvent;
@@ -47,7 +48,8 @@ public class NetworkDeleteHandler extends EventSenderAwareHandler<EnvironmentDto
             environmentService.findEnvironmentById(environmentDto.getId()).ifPresent(environment -> {
                 if (environment.getNetwork() != null) {
                     RegistrationType registrationType = environment.getNetwork().getRegistrationType();
-                    if (registrationType != null && registrationType.equals(RegistrationType.CREATE_NEW)) {
+                    if (registrationType != null && registrationType.equals(RegistrationType.CREATE_NEW)
+                            && !Strings.isNullOrEmpty(environment.getNetwork().getNetworkId())) {
                         environmentNetworkService.deleteNetwork(environmentDtoConverter.environmentToDto(environment));
                     }
                     environment.setNetwork(null);

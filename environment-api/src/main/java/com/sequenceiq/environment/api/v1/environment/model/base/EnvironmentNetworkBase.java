@@ -9,6 +9,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sequenceiq.environment.api.doc.environment.EnvironmentModelDescription;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkAwsParams;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkAzureParams;
+import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkCumulusYarnParams;
+import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkGcpParams;
+import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkOpenstackParams;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkMockParams;
 import com.sequenceiq.environment.api.v1.environment.model.EnvironmentNetworkYarnParams;
 import com.sequenceiq.environment.api.v1.environment.model.request.EnvironmentNetworkRequest;
@@ -39,6 +42,15 @@ public abstract class EnvironmentNetworkBase {
 
     @ApiModelProperty(EnvironmentModelDescription.YARN_SPECIFIC_PARAMETERS)
     private EnvironmentNetworkYarnParams yarn;
+
+    @ApiModelProperty(EnvironmentModelDescription.AWS_SPECIFIC_PARAMETERS)
+    private EnvironmentNetworkGcpParams gcp;
+
+    @ApiModelProperty(EnvironmentModelDescription.AZURE_SPECIFIC_PARAMETERS)
+    private EnvironmentNetworkOpenstackParams openstack;
+
+    @ApiModelProperty(EnvironmentModelDescription.YARN_SPECIFIC_PARAMETERS)
+    private EnvironmentNetworkCumulusYarnParams cumulus;
 
     @ApiModelProperty(EnvironmentModelDescription.MOCK_PARAMETERS)
     private EnvironmentNetworkMockParams mock;
@@ -89,6 +101,30 @@ public abstract class EnvironmentNetworkBase {
 
     public void setYarn(EnvironmentNetworkYarnParams yarn) {
         this.yarn = yarn;
+    }
+
+    public EnvironmentNetworkCumulusYarnParams getCumulus() {
+        return cumulus;
+    }
+
+    public void setCumulus(EnvironmentNetworkCumulusYarnParams cumulus) {
+        this.cumulus = cumulus;
+    }
+
+    public EnvironmentNetworkGcpParams getGcp() {
+        return gcp;
+    }
+
+    public void setGcp(EnvironmentNetworkGcpParams gcp) {
+        this.gcp = gcp;
+    }
+
+    public EnvironmentNetworkOpenstackParams getOpenstack() {
+        return openstack;
+    }
+
+    public void setOpenstack(EnvironmentNetworkOpenstackParams openstack) {
+        this.openstack = openstack;
     }
 
     public EnvironmentNetworkMockParams getMock() {

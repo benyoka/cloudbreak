@@ -12,6 +12,7 @@ import org.junit.Test;
 import com.sequenceiq.cloudbreak.util.ValidationResult;
 import com.sequenceiq.cloudbreak.util.ValidationResult.ValidationResultBuilder;
 import com.sequenceiq.environment.credential.domain.Credential;
+import com.sequenceiq.environment.credential.validation.aws.AwsCredentialValidator;
 
 public class AwsCredentialValidatorTest {
 

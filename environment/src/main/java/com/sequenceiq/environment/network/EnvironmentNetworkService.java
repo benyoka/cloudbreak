@@ -70,6 +70,8 @@ public class EnvironmentNetworkService {
         NetworkDeletionRequest.Builder builder = new NetworkDeletionRequest.Builder()
                 .withStackName(networkCreationRequestFactory.getStackName(environment))
                 .withCloudCredential(cloudCredential)
+                .withNetworkId(environment.getNetwork().getNetworkId())
+                .withSubnetIds(environment.getNetwork().getSubnetIds())
                 .withRegion(environment.getLocation().getName());
         getNoPublicIp(environment.getNetwork()).ifPresent(builder::withResourceGroup);
         return builder.build();

@@ -1,5 +1,7 @@
 package com.sequenceiq.environment.environment.flow.creation.handler.freeipa;
 
+import static com.sequenceiq.environment.CloudPlatform.AWS;
+
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -44,6 +46,6 @@ public class FreeIpaAwsNetworkProvider implements FreeIpaNetworkProvider {
 
     @Override
     public CloudPlatform cloudPlatform() {
-        return CloudPlatform.AWS;
+        return AWS;
     }
 }

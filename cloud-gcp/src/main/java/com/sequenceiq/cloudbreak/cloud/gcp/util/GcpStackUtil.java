@@ -9,6 +9,7 @@ import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
@@ -46,6 +47,10 @@ import com.sequenceiq.cloudbreak.cloud.model.Region;
 import com.sequenceiq.cloudbreak.common.json.JsonUtil;
 
 public final class GcpStackUtil {
+
+    public static final String GCP = "gcp";
+
+    public static final String JSON = "json";
 
     public static final String NETWORK_ID = "networkId";
 
@@ -122,7 +127,9 @@ public final class GcpStackUtil {
     }
 
     public static String getServiceAccountCredentialJson(CloudCredential credential) {
-        return credential.getParameter(CREDENTIAL_JSON, String.class);
+        Map<String, Object> gcp = (Map<String, Object>) credential.getParameters().get(GCP);
+        Map<String, Object> json = (Map<String, Object>) gcp.get(JSON);
+        return json.get(CREDENTIAL_JSON).toString();
     }
 
     public static String getServiceAccountId(CloudCredential credential) {

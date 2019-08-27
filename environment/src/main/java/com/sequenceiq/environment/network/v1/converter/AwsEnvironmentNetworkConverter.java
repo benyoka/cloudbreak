@@ -1,5 +1,7 @@
 package com.sequenceiq.environment.network.v1.converter;
 
+import static com.sequenceiq.environment.CloudPlatform.AWS;
+
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -74,7 +76,7 @@ public class AwsEnvironmentNetworkConverter extends EnvironmentBaseNetworkConver
 
     @Override
     public CloudPlatform getCloudPlatform() {
-        return CloudPlatform.AWS;
+        return AWS;
     }
 
     @Override

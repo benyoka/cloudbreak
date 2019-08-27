@@ -8,6 +8,11 @@ import com.sequenceiq.environment.api.v1.credential.model.response.CredentialRes
 import com.sequenceiq.environment.api.v1.environment.model.base.IdBrokerMappingSource;
 import com.sequenceiq.environment.api.v1.environment.model.base.Tunnel;
 import com.sequenceiq.environment.api.v1.environment.model.request.aws.AwsEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.azure.AzureEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.cumulus.CumulusEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.gcp.GcpEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.openstack.OpenstackEnvironmentParameters;
+import com.sequenceiq.environment.api.v1.environment.model.request.yarn.YarnEnvironmentParameters;
 
 import io.swagger.annotations.ApiModel;
 
@@ -54,6 +59,16 @@ public class DetailedEnvironmentResponse extends EnvironmentBaseResponse {
         private IdBrokerMappingSource idBrokerMappingSource;
 
         private AwsEnvironmentParameters aws;
+
+        private AzureEnvironmentParameters azure;
+
+        private GcpEnvironmentParameters gcp;
+
+        private YarnEnvironmentParameters yarn;
+
+        private CumulusEnvironmentParameters cumulus;
+
+        private OpenstackEnvironmentParameters openstack;
 
         private Builder() {
         }
@@ -157,6 +172,31 @@ public class DetailedEnvironmentResponse extends EnvironmentBaseResponse {
             return this;
         }
 
+        public Builder withAzure(AzureEnvironmentParameters azure) {
+            this.azure = azure;
+            return this;
+        }
+
+        public Builder withGcp(GcpEnvironmentParameters gcp) {
+            this.gcp = gcp;
+            return this;
+        }
+
+        public Builder withYarn(YarnEnvironmentParameters yarn) {
+            this.yarn = yarn;
+            return this;
+        }
+
+        public Builder withCumulus(CumulusEnvironmentParameters cumulus) {
+            this.cumulus = cumulus;
+            return this;
+        }
+
+        public Builder withOpenstack(OpenstackEnvironmentParameters openstack) {
+            this.openstack = openstack;
+            return this;
+        }
+
         public DetailedEnvironmentResponse build() {
             DetailedEnvironmentResponse detailedEnvironmentResponse = new DetailedEnvironmentResponse();
             detailedEnvironmentResponse.setCrn(crn);
@@ -178,6 +218,11 @@ public class DetailedEnvironmentResponse extends EnvironmentBaseResponse {
             detailedEnvironmentResponse.setIdBrokerMappingSource(idBrokerMappingSource);
             detailedEnvironmentResponse.setAdminGroupName(adminGroupName);
             detailedEnvironmentResponse.setAws(aws);
+            detailedEnvironmentResponse.setAzure(azure);
+            detailedEnvironmentResponse.setYarn(yarn);
+            detailedEnvironmentResponse.setCumulus(cumulus);
+            detailedEnvironmentResponse.setOpenstack(openstack);
+            detailedEnvironmentResponse.setGcp(gcp);
             return detailedEnvironmentResponse;
         }
     }

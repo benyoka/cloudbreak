@@ -1,5 +1,7 @@
 package com.sequenceiq.environment.network.v1.converter;
 
+import static com.sequenceiq.environment.CloudPlatform.YARN;
+
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
@@ -49,7 +51,7 @@ public class YarnEnvironmentNetworkConverter extends EnvironmentBaseNetworkConve
 
     @Override
     public CloudPlatform getCloudPlatform() {
-        return CloudPlatform.YARN;
+        return YARN;
     }
 
     @Override

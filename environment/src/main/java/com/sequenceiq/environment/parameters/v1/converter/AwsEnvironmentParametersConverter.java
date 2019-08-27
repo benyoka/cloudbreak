@@ -1,5 +1,7 @@
 package com.sequenceiq.environment.parameters.v1.converter;
 
+import static com.sequenceiq.environment.CloudPlatform.AWS;
+
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -22,7 +24,7 @@ public class AwsEnvironmentParametersConverter extends BaseEnvironmentParameters
 
     @Override
     public CloudPlatform getCloudPlatform() {
-        return CloudPlatform.AWS;
+        return AWS;
     }
 
     @Override

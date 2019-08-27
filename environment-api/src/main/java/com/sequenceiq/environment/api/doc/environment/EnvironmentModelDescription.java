@@ -60,6 +60,12 @@ public class EnvironmentModelDescription {
     public static final String AWS_PARAMETERS = "AWS Specific parameters.";
     public static final String S3_GUARD = "S3Guard parameters.";
     public static final String S3_GUARD_DYNAMO_TABLE_NAME = "S3Guard Dynamo table name.";
+    public static final String QUEUE = "Queue for yarn and cumulus.";
+    public static final String AZURE_PARAMETERS = "AZURE Specific parameters.";
+    public static final String GCP_PARAMETERS = "GCP Specific parameters.";
+    public static final String YARN_PARAMETERS = "YARN Specific parameters.";
+    public static final String CUMULUS_PARAMETERS = "CUMULUS Specific parameters.";
+    public static final String OPENSTACK_PARAMETERS = "OPENSTACK Specific parameters.";
 
     private EnvironmentModelDescription() {
     }

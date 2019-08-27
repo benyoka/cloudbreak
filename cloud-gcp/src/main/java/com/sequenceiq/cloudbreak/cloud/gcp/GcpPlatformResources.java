@@ -135,7 +135,15 @@ public class GcpPlatformResources implements PlatformResources {
             if (subnetworkList != null && network.getSubnetworks() != null) {
                 for (Subnetwork subnetwork : subnetworkList) {
                     if (network.getSubnetworks().contains(subnetwork.getSelfLink())) {
-                        subnets.add(new CloudSubnet(subnetwork.getId().toString(), subnetwork.getName(), null, subnetwork.getIpCidrRange()));
+                        subnets.add(
+                                new CloudSubnet(
+                                        subnetwork.getId().toString(),
+                                        subnetwork.getName(),
+                                        null,
+                                        subnetwork.getIpCidrRange(),
+                                        subnetwork.getPrivateIpGoogleAccess(),
+                                        !subnetwork.getPrivateIpGoogleAccess(),
+                                        !Strings.isNullOrEmpty(subnetwork.getGatewayAddress())));
                     }
                 }
             }
