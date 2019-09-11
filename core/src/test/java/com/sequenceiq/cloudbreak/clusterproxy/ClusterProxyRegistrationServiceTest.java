@@ -42,6 +42,8 @@ public class ClusterProxyRegistrationServiceTest {
 
     private static final String REMOVE_CONFIG_PATH = "/rpc/removeConfig";
 
+    private static final List<String> CERTIFICATES = asList("certificate1", "certificate2");
+
     private MockRestServiceServer mockServer;
 
     private ClusterProxyRegistrationService service;
@@ -63,13 +65,13 @@ public class ClusterProxyRegistrationServiceTest {
         ConfigRegistrationResponse response = new ConfigRegistrationResponse();
         response.setX509Unwrapped("X509PublicKey");
         mockServer.expect(once(), MockRestRequestMatchers.requestTo(new URI(CLUSTER_PROXY_URL + REGISTER_CONFIG_PATH)))
-                .andExpect(content().json(configRegistrationRequest(CLUSTER_IDENTIFIER, clusterServiceConfig)))
+                .andExpect(content().json(configRegistrationRequest(CLUSTER_IDENTIFIER, clusterServiceConfig, CERTIFICATES)))
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withStatus(HttpStatus.OK)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(JsonUtil.writeValueAsStringSilent(response)));
 
-        ConfigRegistrationResponse registrationResponse = service.registerCluster(CLUSTER_IDENTIFIER, asList(clusterServiceConfig));
+        ConfigRegistrationResponse registrationResponse = service.registerCluster(CLUSTER_IDENTIFIER, asList(clusterServiceConfig), CERTIFICATES);
         assertEquals("X509PublicKey", registrationResponse.getX509Unwrapped());
     }
 
@@ -97,11 +99,11 @@ public class ClusterProxyRegistrationServiceTest {
         ClusterServiceCredential cloudbreakUser = new ClusterServiceCredential("cloudbreak", "/cb/test-data/secret/cbpassword:secret");
         ClusterServiceCredential dpUser = new ClusterServiceCredential("cmmgmt", "/cb/test-data/secret/dppassword:secret", true);
         return new ClusterServiceConfig("cloudera-manager",
-                List.of("https://10.10.10.10/clouderamanager"), asList(cloudbreakUser, dpUser));
+                List.of("https://10.10.10.10/clouderamanager"), asList(cloudbreakUser, dpUser), null);
     }
 
-    private String configRegistrationRequest(String clusterIdentifier, ClusterServiceConfig serviceConfig) {
-        return JsonUtil.writeValueAsStringSilent(new ConfigRegistrationRequest(clusterIdentifier, List.of(serviceConfig)));
+    private String configRegistrationRequest(String clusterIdentifier, ClusterServiceConfig serviceConfig, List<String> certificates) {
+        return JsonUtil.writeValueAsStringSilent(new ConfigRegistrationRequest(clusterIdentifier, List.of(serviceConfig), certificates));
     }
 
     private String configUpdateRequest(String clusterIdentifier, String knoxUri) {

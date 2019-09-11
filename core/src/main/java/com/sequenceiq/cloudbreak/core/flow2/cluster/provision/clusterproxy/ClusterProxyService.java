@@ -41,8 +41,8 @@ public class ClusterProxyService {
         List<ClusterServiceConfig> serviceConfigList = asList(createServiceConfig(stack));
         // Registering twice - once with Stack CRN and another time with Cluster Id. This is
         // for backwards compatibility. Will remove this after all consumers start using Stack CRN instead of Cluster Id.
-        clusterProxyRegistrationService.registerCluster(clusterId(stack.getCluster()), serviceConfigList);
-        return clusterProxyRegistrationService.registerCluster(stack.getResourceCrn(), serviceConfigList);
+        clusterProxyRegistrationService.registerCluster(clusterId(stack.getCluster()), serviceConfigList, null);
+        return clusterProxyRegistrationService.registerCluster(stack.getResourceCrn(), serviceConfigList, null);
     }
 
     public void registerGatewayConfiguration(Long stackId) {
@@ -79,7 +79,7 @@ public class ClusterProxyService {
 
         List<ClusterServiceCredential> credentials = asList(new ClusterServiceCredential(cloudbreakUser, cloudbreakPasswordVaultPath),
                 new ClusterServiceCredential(dpUser, dpPasswordVaultPath, true));
-        return new ClusterServiceConfig("cloudera-manager", singletonList(clusterManagerUrl(stack)), credentials);
+        return new ClusterServiceConfig("cloudera-manager", singletonList(clusterManagerUrl(stack)), credentials, null);
     }
 
     private String getProxyConfigFromStack(Stack stack) {

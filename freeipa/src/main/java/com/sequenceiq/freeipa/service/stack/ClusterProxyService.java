@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.sequenceiq.cloudbreak.client.HttpClientConfig;
+import com.sequenceiq.cloudbreak.clusterproxy.ClientCertificate;
 import com.sequenceiq.cloudbreak.clusterproxy.ClusterProxyRegistrationService;
 import com.sequenceiq.cloudbreak.clusterproxy.ClusterServiceConfig;
 import com.sequenceiq.cloudbreak.clusterproxy.ConfigRegistrationResponse;
@@ -15,17 +17,23 @@ import com.sequenceiq.cloudbreak.orchestrator.model.GatewayConfig;
 import com.sequenceiq.freeipa.entity.FreeIpa;
 import com.sequenceiq.freeipa.entity.Stack;
 import com.sequenceiq.freeipa.service.GatewayConfigService;
+import com.sequenceiq.freeipa.service.TlsSecurityService;
 import com.sequenceiq.freeipa.service.freeipa.FreeIpaService;
 
 @Service
 public class ClusterProxyService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterProxyService.class);
 
+    private static final String SERVICE_NAME = "freeipa";
+
     @Inject
     private FreeIpaService freeIpaService;
 
     @Inject
     private GatewayConfigService gatewayConfigService;
+
+    @Inject
+    private TlsSecurityService tlsSecurityService;
 
     @Inject
     private ClusterProxyRegistrationService clusterProxyRegistrationService;
@@ -37,10 +45,15 @@ public class ClusterProxyService {
 
     public ConfigRegistrationResponse registerFreeIpa(FreeIpa freeIpa) {
         Stack stack = freeIpa.getStack();
+
+        GatewayConfig primaryGatewayConfig = gatewayConfigService.getPrimaryGatewayConfig(stack);
+        HttpClientConfig httpClientConfig = tlsSecurityService.buildTLSClientConfigForPrimaryGateway(
+                stack.getId(), primaryGatewayConfig.getGatewayUrl());
+
         LOGGER.debug("Registering cluster with cluster-proxy: Environment CRN = [{}], Stack CRN = [{}]", stack.getEnvironmentCrn(), stack.getResourceCrn());
-        List<ClusterServiceConfig> serviceConfigs = List.of(createServiceConfig(stack));
+        List<ClusterServiceConfig> serviceConfigs = List.of(createServiceConfig(httpClientConfig));
         LOGGER.debug("Registering service configs [{}]", serviceConfigs);
-        return clusterProxyRegistrationService.registerCluster(stack.getResourceCrn(), serviceConfigs);
+        return clusterProxyRegistrationService.registerCluster(stack.getResourceCrn(), serviceConfigs, List.of(httpClientConfig.getServerCert()));
     }
 
     public void deregisterFreeIpa(Long stackId) {
@@ -54,12 +67,9 @@ public class ClusterProxyService {
         clusterProxyRegistrationService.deregisterCluster(stack.getResourceCrn());
     }
 
-    private ClusterServiceConfig createServiceConfig(Stack stack) {
-        return new ClusterServiceConfig("freeipa", List.of(freeipaUrl(stack)), List.of());
-    }
-
-    private String freeipaUrl(Stack stack) {
-        GatewayConfig primaryGatewayConfig = gatewayConfigService.getPrimaryGatewayConfig(stack);
-        return primaryGatewayConfig.getGatewayUrl();
+    private ClusterServiceConfig createServiceConfig(HttpClientConfig httpClientConfig) {
+        return new ClusterServiceConfig(SERVICE_NAME, List.of(httpClientConfig.getApiAddress()), List.of(),
+                new ClientCertificate("freeipa/shared/dhan/keyRef:secret", "freeipa/shared/dhan/certificateRef:secret"));
+//        new ClientCertificate(httpClientConfig.getClientKey(), httpClientConfig.getClientCert()));
     }
 }

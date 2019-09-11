@@ -13,10 +13,14 @@ public class ConfigRegistrationRequest {
     @JsonProperty
     private List<ClusterServiceConfig> services;
 
+    @JsonProperty
+    private List<String> certificates;
+
     @JsonCreator
-    public ConfigRegistrationRequest(String clusterCrn, List<ClusterServiceConfig> services) {
+    public ConfigRegistrationRequest(String clusterCrn, List<ClusterServiceConfig> services, List<String> certificates) {
         this.clusterCrn = clusterCrn;
         this.services = services;
+        this.certificates = certificates;
     }
 
     @Override
@@ -31,16 +35,20 @@ public class ConfigRegistrationRequest {
         ConfigRegistrationRequest that = (ConfigRegistrationRequest) o;
 
         return Objects.equals(clusterCrn, that.clusterCrn) &&
-                Objects.equals(services, that.services);
+                Objects.equals(services, that.services) &&
+                Objects.equals(certificates, that.certificates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(clusterCrn, services);
+        return Objects.hash(clusterCrn, services, certificates);
     }
 
     @Override
     public String toString() {
-        return "ConfigRegistrationRequest{clusterCrn='" + clusterCrn + '\'' + ", services=" + services + '}';
+        return "ConfigRegistrationRequest{clusterCrn='" + clusterCrn
+                + '\'' + ", services=" + services
+                + '\'' + ", certificates=" + certificates
+                + '}';
     }
 }

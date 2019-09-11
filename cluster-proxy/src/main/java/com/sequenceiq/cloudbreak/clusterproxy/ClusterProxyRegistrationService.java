@@ -42,9 +42,9 @@ public class ClusterProxyRegistrationService {
         this.restTemplate = restTemplate;
     }
 
-    public ConfigRegistrationResponse registerCluster(String clusterIdentifier, List<ClusterServiceConfig> serviceConfigs) {
+    public ConfigRegistrationResponse registerCluster(String clusterIdentifier, List<ClusterServiceConfig> serviceConfigs, List<String> certificates) {
         try {
-            ConfigRegistrationRequest proxyConfigRequest = new ConfigRegistrationRequest(clusterIdentifier, serviceConfigs);
+            ConfigRegistrationRequest proxyConfigRequest = new ConfigRegistrationRequest(clusterIdentifier, serviceConfigs, certificates);
             LOGGER.debug("Cluster Proxy config request: {}", proxyConfigRequest);
             ResponseEntity<ConfigRegistrationResponse> response = restTemplate.postForEntity(clusterProxyUrl + registerConfigPath,
                     requestEntity(proxyConfigRequest), ConfigRegistrationResponse.class);

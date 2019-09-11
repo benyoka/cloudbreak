@@ -64,18 +64,18 @@ public class ClusterProxyServiceTest {
         response.setX509Unwrapped("X509PublicKey");
         List<ClusterServiceConfig> clusterServiceConfigs = asList(clusterServiceConfig());
 
-        when(clusterProxyRegistrationService.registerCluster(any(), any())).thenReturn(response);
+        when(clusterProxyRegistrationService.registerCluster(any(), any(), any())).thenReturn(response);
 
         ConfigRegistrationResponse registrationResponse = service.registerCluster(testStack());
         assertEquals("X509PublicKey", registrationResponse.getX509Unwrapped());
-        verify(clusterProxyRegistrationService).registerCluster(String.valueOf(CLUSTER_ID), clusterServiceConfigs);
-        verify(clusterProxyRegistrationService).registerCluster("stack-crn", clusterServiceConfigs);
+        verify(clusterProxyRegistrationService).registerCluster(String.valueOf(CLUSTER_ID), clusterServiceConfigs, null);
+        verify(clusterProxyRegistrationService).registerCluster("stack-crn", clusterServiceConfigs, null);
     }
 
     @Test
     public void shouldFailIfVaultSecretIsInvalid() throws URISyntaxException, JsonProcessingException {
         assertThrows(VaultConfigException.class, () -> service.registerCluster(testStackWithInvalidSecret()));
-        verify(clusterProxyRegistrationService, times(0)).registerCluster(any(), any());
+        verify(clusterProxyRegistrationService, times(0)).registerCluster(any(), any(), any());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ClusterProxyServiceTest {
         ClusterServiceCredential cloudbreakUser = new ClusterServiceCredential("cloudbreak", "/cb/test-data/secret/cbpassword:secret");
         ClusterServiceCredential dpUser = new ClusterServiceCredential("cmmgmt", "/cb/test-data/secret/dppassword:secret", true);
         return new ClusterServiceConfig("cloudera-manager",
-                List.of("https://10.10.10.10/clouderamanager"), asList(cloudbreakUser, dpUser));
+                List.of("https://10.10.10.10/clouderamanager"), asList(cloudbreakUser, dpUser), null);
     }
 
     private Stack testStack() {
