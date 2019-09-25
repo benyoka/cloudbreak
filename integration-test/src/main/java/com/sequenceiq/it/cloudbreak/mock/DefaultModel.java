@@ -122,4 +122,26 @@ public class DefaultModel extends MockModel {
         CloudVmMetaDataStatus cloudVmMetaDataStatus = new CloudVmMetaDataStatus(cloudVmInstanceStatus, vmMetaDataStatus.getMetaData());
         instanceMap.put(instanceId, cloudVmMetaDataStatus);
     }
+
+    public void stopAllInstances() {
+        for (Map.Entry<String, CloudVmMetaDataStatus> entry : instanceMap.entrySet()) {
+            CloudVmMetaDataStatus currentVmMeta = entry.getValue();
+            CloudVmInstanceStatus currentInstance = currentVmMeta.getCloudVmInstanceStatus();
+            CloudVmInstanceStatus newInstanceStatus = new CloudVmInstanceStatus(currentInstance.getCloudInstance(), InstanceStatus.STOPPED);
+            CloudInstanceMetaData currentInstanceMeta = currentVmMeta.getMetaData();
+            CloudVmMetaDataStatus newVmMetaData = new CloudVmMetaDataStatus(newInstanceStatus, currentVmMeta.getMetaData());
+            entry.setValue(newVmMetaData);
+        }
+    }
+
+    public void startAllInstances() {
+        for (Map.Entry<String, CloudVmMetaDataStatus> entry : instanceMap.entrySet()) {
+            CloudVmMetaDataStatus currentVmMeta = entry.getValue();
+            CloudVmInstanceStatus currentInstance = currentVmMeta.getCloudVmInstanceStatus();
+            CloudVmInstanceStatus newInstanceStatus = new CloudVmInstanceStatus(currentInstance.getCloudInstance(), InstanceStatus.STARTED);
+            CloudInstanceMetaData currentInstanceMeta = currentVmMeta.getMetaData();
+            CloudVmMetaDataStatus newVmMetaData = new CloudVmMetaDataStatus(newInstanceStatus, currentVmMeta.getMetaData());
+            entry.setValue(newVmMetaData);
+        }
+    }
 }

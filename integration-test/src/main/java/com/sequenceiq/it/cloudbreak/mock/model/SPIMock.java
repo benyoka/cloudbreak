@@ -25,6 +25,10 @@ public class SPIMock extends AbstractModelMock {
 
     public static final String CLOUD_METADATA_STATUSES = "/cloud_metadata_statuses";
 
+    public static final String START_INSTANCES = "/start_instances";
+
+    public static final String STOP_INSTANCES = "/stop_instances";
+
     private DynamicRouteStack dynamicRouteStack;
 
     public SPIMock(Service sparkService, DefaultModel defaultModel) {
@@ -37,6 +41,8 @@ public class SPIMock extends AbstractModelMock {
         postMockProviderMetadataStatus(instanceMap);
         postMockProviderInstanceStatus(instanceMap);
         postMockProviderTerminateInstance(instanceMap);
+        postMockProviderStartInstance(getDefaultModel());
+        postMockProviderStopInstance(getDefaultModel());
     }
 
     public DynamicRouteStack getDynamicRouteStack() {
@@ -58,5 +64,19 @@ public class SPIMock extends AbstractModelMock {
 
     private void postMockProviderMetadataStatus(Map<String, CloudVmMetaDataStatus> instanceMap) {
         dynamicRouteStack.post(MOCK_ROOT + CLOUD_METADATA_STATUSES, new CloudMetaDataStatuses(instanceMap));
+    }
+
+    private void postMockProviderStartInstance(DefaultModel model) {
+        dynamicRouteStack.post(MOCK_ROOT + START_INSTANCES, (request, response) -> {
+            model.startAllInstances();
+            return null;
+        });
+    }
+
+    private void postMockProviderStopInstance(DefaultModel model) {
+        dynamicRouteStack.post(MOCK_ROOT + STOP_INSTANCES, (request, response) -> {
+            model.stopAllInstances();
+            return null;
+        });
     }
 }
