@@ -1,7 +1,13 @@
 package com.sequenceiq.environment.environment.validation.validators;
 
-import java.util.Map;
+import static com.sequenceiq.cloudbreak.util.ConditionBasedEvaluatorUtil.doIfFalse;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
@@ -19,6 +25,8 @@ import com.sequenceiq.environment.network.dto.NetworkDto;
 
 @Component
 public class EnvironmentCreationValidator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnvironmentCreationValidator.class);
 
     private static final String EXPECTED_NETWORK_MASK = "16";
 
@@ -41,9 +49,38 @@ public class EnvironmentCreationValidator {
         ValidationResultBuilder resultBuilder = ValidationResult.builder();
         environmentRegionValidator.validateRegions(creationDto.getRegions(), cloudRegions, cloudPlatform, resultBuilder);
         environmentRegionValidator.validateLocation(creationDto.getLocation(), creationDto.getRegions(), environment, resultBuilder);
+        validateNetworkHasTheSamePropertyFilledAsTheDesiredCloudPlatform(creationDto.getNetwork(), cloudPlatform, resultBuilder);
         validateNetwork(creationDto, cloudPlatform, resultBuilder);
         validateSecurityGroup(creationDto, cloudPlatform, resultBuilder);
         return resultBuilder.build();
+    }
+
+    private void validateNetworkHasTheSamePropertyFilledAsTheDesiredCloudPlatform(NetworkDto networkDto, String cloudPlatform,
+            ValidationResultBuilder resultBuilder) {
+
+        if (networkDto != null) {
+            Map<CloudPlatform, Optional<Object>> providerNetworkParamPair = Map.of(
+                    CloudPlatform.AWS, Optional.ofNullable(networkDto.getAws()),
+                    CloudPlatform.AZURE, Optional.ofNullable(networkDto.getAzure()),
+                    CloudPlatform.MOCK, Optional.ofNullable(networkDto.getMock()),
+                    CloudPlatform.YARN, Optional.ofNullable(networkDto.getYarn())
+            );
+
+            LOGGER.debug("About to validate network properties for cloud platform \"{}\" against the following supported platforms: {}",
+                    cloudPlatform, String.join(", ", providerNetworkParamPair.keySet().stream().map(Enum::name).collect(Collectors.toSet())));
+
+            providerNetworkParamPair.keySet().stream()
+                    .filter(cloudProviderName -> cloudProviderName.name().equalsIgnoreCase(cloudPlatform))
+                    .findFirst()
+                    .ifPresentOrElse(cloudProvider -> evaluateProviderNetworkRelation(providerNetworkParamPair.get(cloudProvider).isPresent(), cloudPlatform,
+                            resultBuilder), () -> resultBuilder.error("Unable to find cloud platform (\"" + cloudPlatform + "\") for network property!"));
+        }
+    }
+
+    private void evaluateProviderNetworkRelation(boolean networkParamExists, String cloudPlatform, ValidationResultBuilder resultBuilder) {
+        doIfFalse(networkParamExists, cloudPlatform,
+                ignore -> resultBuilder.error(String.format("The related network parameter for the cloud platform \"%s\" has not given!",
+                cloudPlatform)));
     }
 
     private void validateNetwork(EnvironmentCreationDto request, String cloudPlatform, ValidationResultBuilder resultBuilder) {
