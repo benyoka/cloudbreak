@@ -24,11 +24,17 @@ import com.sequenceiq.cloudbreak.cloud.model.CloudVmMetaDataStatus;
 import com.sequenceiq.it.cloudbreak.mock.AbstractModelMock;
 import com.sequenceiq.it.cloudbreak.mock.DefaultModel;
 import com.sequenceiq.it.cloudbreak.spark.DynamicRouteStack;
+import com.sequenceiq.it.cloudbreak.spark.StatefulRoute;
 import com.sequenceiq.it.util.HostNameUtil;
 
+import spark.Request;
+import spark.Response;
+import spark.Route;
 import spark.Service;
 
 public class ClouderaManagerMock extends AbstractModelMock {
+
+    public static final String PROFILE_RETURN_HTTP_500 = "cmHttp500";
 
     public static final String API_ROOT = "/api/v31";
 
@@ -72,9 +78,12 @@ public class ClouderaManagerMock extends AbstractModelMock {
 
     private DynamicRouteStack dynamicRouteStack;
 
-    public ClouderaManagerMock(Service sparkService, DefaultModel defaultModel) {
+    private final List<String> activeProfiles;
+
+    public ClouderaManagerMock(Service sparkService, DefaultModel defaultModel, List<String> activeProfiles) {
         super(sparkService, defaultModel);
         dynamicRouteStack = new DynamicRouteStack(sparkService, defaultModel);
+        this.activeProfiles = activeProfiles;
     }
 
     public DynamicRouteStack getDynamicRouteStack() {
@@ -107,28 +116,67 @@ public class ClouderaManagerMock extends AbstractModelMock {
         postCdpRemoteContext();
     }
 
+    public static class ErroneousStatefulRoute implements StatefulRoute {
+
+        private final Route happyResponseHandler;
+
+        private final StatefulRoute statefulHappyResponseHandler;
+
+        private final List<String> activeProfiles;
+
+        private int callCounter;
+
+        public ErroneousStatefulRoute(Route happyResponseHandler, List<String> activeProfiles) {
+            this.happyResponseHandler = happyResponseHandler;
+            statefulHappyResponseHandler = null;
+            this.activeProfiles = activeProfiles;
+        }
+
+        public ErroneousStatefulRoute(StatefulRoute statefulHappyResponseHandler, List<String> activeProfiles) {
+            happyResponseHandler = null;
+            this.statefulHappyResponseHandler = statefulHappyResponseHandler;
+            this.activeProfiles = activeProfiles;
+        }
+
+        @Override
+        public Object handle(Request request, Response response, DefaultModel model) throws Exception {
+            if (activeProfiles.contains(PROFILE_RETURN_HTTP_500) && callCounter == 0) {
+                response.body("Mocked HTTP 500.");
+                response.status(500);
+                callCounter++;
+                return response;
+            } else {
+                callCounter++;
+                return happyResponseHandler == null ? statefulHappyResponseHandler.handle(request, response, model)
+                        : happyResponseHandler.handle(request, response);
+            }
+        }
+    }
+
     private void readAuthRoles() {
-        dynamicRouteStack.get(READ_AUTH_ROLES, (request, response) -> new ApiAuthRoleMetadataList());
+        dynamicRouteStack.get(READ_AUTH_ROLES,
+                new ErroneousStatefulRoute((request, response) -> new ApiAuthRoleMetadataList(), activeProfiles));
     }
 
     private void getEcho() {
-        dynamicRouteStack.get(ECHO, (request, response) -> {
+        dynamicRouteStack.get(ECHO, new ErroneousStatefulRoute((request, response) -> {
             String message = request.queryMap("message").value();
             message = message == null ? "Hello World!" : message;
             return new ApiEcho().message(message);
-        });
+        }, activeProfiles));
     }
 
     private void getUsers() {
-        dynamicRouteStack.get(USERS, (request, response) -> getUserList());
+        dynamicRouteStack.get(USERS, new ErroneousStatefulRoute((request, response) -> getUserList(), activeProfiles));
     }
 
     private void putUser() {
-        dynamicRouteStack.put(USERS_USER, (request, response) -> new ApiUser2().name(request.params("user")));
+        dynamicRouteStack.put(USERS_USER, new ErroneousStatefulRoute((request, response)
+                -> new ApiUser2().name(request.params("user")), activeProfiles));
     }
 
     private void postUser() {
-        dynamicRouteStack.post(USERS, (request, response) -> getUserList());
+        dynamicRouteStack.post(USERS, new ErroneousStatefulRoute((request, response) -> getUserList(), activeProfiles));
     }
 
     private ApiUser2List getUserList() {
@@ -140,85 +188,89 @@ public class ClouderaManagerMock extends AbstractModelMock {
     }
 
     private void postImportClusterTemplate() {
-        dynamicRouteStack.post(IMPORT_CLUSTERTEMPLATE,
-                (request, response) -> new ApiCommand().id(BigDecimal.ONE).name("Import ClusterTemplate").active(Boolean.TRUE));
+        dynamicRouteStack.post(IMPORT_CLUSTERTEMPLATE, new ErroneousStatefulRoute((request, response)
+                        -> new ApiCommand().id(BigDecimal.ONE).name("Import ClusterTemplate").active(Boolean.TRUE), activeProfiles));
     }
 
     private void getCommand() {
-        dynamicRouteStack.get(COMMANDS_COMMAND,
-                (request, response) -> new ApiCommand().id(new BigDecimal(request.params("commandId"))).active(Boolean.FALSE).success(Boolean.TRUE));
+        dynamicRouteStack.get(COMMANDS_COMMAND, new ErroneousStatefulRoute((request, response)
+                -> new ApiCommand().id(new BigDecimal(request.params("commandId"))).active(Boolean.FALSE).success(Boolean.TRUE), activeProfiles));
     }
 
     private void postStopCommand() {
-        dynamicRouteStack.post(COMMANDS_STOP,
-                (request, response) -> new ApiCommand().id(BigDecimal.ONE).active(Boolean.TRUE).name("Stop"));
+        dynamicRouteStack.post(COMMANDS_STOP, new ErroneousStatefulRoute((request, response)
+                -> new ApiCommand().id(BigDecimal.ONE).active(Boolean.TRUE).name("Stop"), activeProfiles));
     }
 
     private void postStartCommand() {
-        dynamicRouteStack.post(COMMANDS_START,
-                (request, response) -> new ApiCommand().id(BigDecimal.ONE).active(Boolean.TRUE).name("Start"));
+        dynamicRouteStack.post(COMMANDS_START, new ErroneousStatefulRoute((request, response)
+                -> new ApiCommand().id(BigDecimal.ONE).active(Boolean.TRUE).name("Start"), activeProfiles));
     }
 
     private void postBeginTrial() {
-        dynamicRouteStack.post(BEGIN_FREE_TRIAL, (request, response) -> null);
+        dynamicRouteStack.post(BEGIN_FREE_TRIAL, new ErroneousStatefulRoute((request, response) -> null, activeProfiles));
     }
 
     private void addManagementService() {
-        dynamicRouteStack.put(MANAGEMENT_SERVICE, (request, response) -> new ApiService());
+        dynamicRouteStack.put(MANAGEMENT_SERVICE, new ErroneousStatefulRoute((request, response) -> new ApiService(), activeProfiles));
     }
 
     private void getManagementService() {
-        dynamicRouteStack.get(MANAGEMENT_SERVICE, (request, response) -> new ApiService().serviceState(ApiServiceState.STARTED));
+        dynamicRouteStack.get(MANAGEMENT_SERVICE, new ErroneousStatefulRoute((request, response)
+                -> new ApiService().serviceState(ApiServiceState.STARTED), activeProfiles));
     }
 
     private void startManagementService() {
-        dynamicRouteStack.post(START_MANAGEMENT_SERVICE, (request, response) -> new ApiService());
+        dynamicRouteStack.post(START_MANAGEMENT_SERVICE, new ErroneousStatefulRoute((request, response) -> new ApiService(), activeProfiles));
     }
 
     private void listRoleTypes() {
-        dynamicRouteStack.get(ROLE_TYPES, (request, response) -> new ApiRoleTypeList().items(new ArrayList<>()));
+        dynamicRouteStack.get(ROLE_TYPES, new ErroneousStatefulRoute((request, response)
+                -> new ApiRoleTypeList().items(new ArrayList<>()), activeProfiles));
     }
 
     private void listRoles() {
-        dynamicRouteStack.get(ROLES, (request, response) -> new ApiRoleTypeList().items(new ArrayList<>()));
+        dynamicRouteStack.get(ROLES, new ErroneousStatefulRoute((request, response)
+                -> new ApiRoleTypeList().items(new ArrayList<>()), activeProfiles));
     }
 
     private void createRoles() {
-        dynamicRouteStack.post(ROLES, (request, response) -> new ApiRoleTypeList().items(new ArrayList<>()));
+        dynamicRouteStack.post(ROLES, new ErroneousStatefulRoute((request, response)
+                -> new ApiRoleTypeList().items(new ArrayList<>()), activeProfiles));
     }
 
     private void listActiveCommands() {
-        dynamicRouteStack.get(ACTIVE_COMMANDS,
-                (request, response) -> new ApiCommandList().items(
-                        List.of(new ApiCommand().id(new BigDecimal(1)).active(Boolean.FALSE).success(Boolean.TRUE))));
+        dynamicRouteStack.get(ACTIVE_COMMANDS, new ErroneousStatefulRoute((request, response) -> new ApiCommandList().items(
+                        List.of(new ApiCommand().id(new BigDecimal(1)).active(Boolean.FALSE).success(Boolean.TRUE))), activeProfiles));
     }
 
     private void listCommands() {
-        dynamicRouteStack.get(LIST_COMMANDS,
-                (request, response) -> new ApiCommandList().items(
-                        List.of(new ApiCommand().id(new BigDecimal(1)).active(Boolean.FALSE).success(Boolean.TRUE))));
+        dynamicRouteStack.get(LIST_COMMANDS, new ErroneousStatefulRoute((request, response) -> new ApiCommandList().items(
+                        List.of(new ApiCommand().id(new BigDecimal(1)).active(Boolean.FALSE).success(Boolean.TRUE))), activeProfiles));
     }
 
     private void cmConfig() {
-        dynamicRouteStack.get(CONFIG, (request, response) -> new ApiConfigList().items(new ArrayList<>()));
+        dynamicRouteStack.get(CONFIG, new ErroneousStatefulRoute((request, response)
+                -> new ApiConfigList().items(new ArrayList<>()), activeProfiles));
     }
 
     private void updateCmConfig() {
-        dynamicRouteStack.put(CONFIG, (request, response) -> new ApiConfigList().items(new ArrayList<>()));
+        dynamicRouteStack.put(CONFIG, new ErroneousStatefulRoute((request, response)
+                -> new ApiConfigList().items(new ArrayList<>()), activeProfiles));
     }
 
     private void getCdpRemoteContext() {
         dynamicRouteStack.get(CDP_REMOTE_CONTEXT_BY_CLUSTER_CLUSTER_NAME,
-                (req, res) -> new ApiRemoteDataContext());
+                new ErroneousStatefulRoute((req, res) -> new ApiRemoteDataContext(), activeProfiles));
     }
 
     private void postCdpRemoteContext() {
         dynamicRouteStack.post(CDP_REMOTE_CONTEXT,
-                (req, res) -> new ApiRemoteDataContext());
+                new ErroneousStatefulRoute((req, res) -> new ApiRemoteDataContext(), activeProfiles));
     }
 
     private void getHosts() {
-        dynamicRouteStack.get(HOSTS, (request, response, model) -> {
+        dynamicRouteStack.get(HOSTS, new ErroneousStatefulRoute((request, response, model) -> {
             Map<String, CloudVmMetaDataStatus> instanceMap = model.getInstanceMap();
             ApiHostList apiHostList = new ApiHostList();
             for (Map.Entry<String, CloudVmMetaDataStatus> entry : instanceMap.entrySet()) {
@@ -229,7 +281,7 @@ public class ClouderaManagerMock extends AbstractModelMock {
                 apiHostList.addItemsItem(apiHost);
             }
             return apiHostList;
-        });
+        }, activeProfiles));
     }
 
 }

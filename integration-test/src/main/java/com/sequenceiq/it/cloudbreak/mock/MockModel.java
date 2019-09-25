@@ -1,5 +1,7 @@
 package com.sequenceiq.it.cloudbreak.mock;
 
+import java.util.List;
+
 import spark.Service;
 
 public abstract class MockModel {
@@ -14,7 +16,7 @@ public abstract class MockModel {
         this.mockServerAddress = mockServerAddress;
     }
 
-    public abstract void startModel(Service sparkService, String mockServerAddress);
+    public abstract void startModel(Service sparkService, String mockServerAddress, List<String> activeProfiles);
 
     public abstract String getClusterName();
 }
