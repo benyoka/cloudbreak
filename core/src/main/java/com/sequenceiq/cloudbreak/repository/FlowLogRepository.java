@@ -1,11 +1,13 @@
 package com.sequenceiq.cloudbreak.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -55,5 +57,8 @@ public interface FlowLogRepository extends DisabledBaseRepository<FlowLog, Long>
     @Query("UPDATE FlowLog fl SET fl.stateStatus = :stateStatus WHERE fl.id = :id")
     void updateLastLogStatusInFlow(@Param("id") Long id, @Param("stateStatus") StateStatus stateStatus);
 
-    List<FlowLog> findAllByStackIdOrderByCreatedDesc(Long stackId);
+    List<FlowLog> findAllByStackIdOrderByCreatedDesc(Long stackId, Pageable page);
+
+    @Query("SELECT fl.id FROM FlowLog fl WHERE fl.stackId = :stackId AND fl.stateStatus = :status")
+    Optional<Long> findByStackIdAndStateStatus(@Param("stackId") Long stackId, @Param("status") StateStatus status);
 }
