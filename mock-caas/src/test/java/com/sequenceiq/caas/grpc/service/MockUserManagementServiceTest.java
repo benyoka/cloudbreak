@@ -67,38 +67,13 @@ public class MockUserManagementServiceTest {
     }
 
     @Test
-    public void testgetActorWorkloadCredentials() {
+    public void testGetActorWorkloadCredentials() {
         GetActorWorkloadCredentialsRequest req = GetActorWorkloadCredentialsRequest.getDefaultInstance();
-        GetActorWorkloadCredentialsResponse expected;
-        final int keyType17 = 17;
-        final int keyType18 = 18;
-        final int saltType = 4;
-
-        GetActorWorkloadCredentialsResponse.Builder respBuilder = GetActorWorkloadCredentialsResponse.getDefaultInstance().toBuilder();
-        respBuilder.addKerberosKeysBuilder(0)
-            .setSaltType(saltType)
-            .setKeyType(keyType17)
-            .setKeyValue("testKeyValue17")
-            .setSaltValue("NonIodizedGrainOfSalt")
-            .build();
-
-        respBuilder.addKerberosKeysBuilder(1)
-            .setSaltType(saltType)
-            .setKeyType(keyType18)
-            .setKeyValue("testKeyValue18")
-            .setSaltValue("IodizedGrainOfSalt")
-            .build();
-
-        respBuilder.setPasswordHash("015353916be1489289e59166124bbcf21c78595f3717f71b079c469c513e05e7");
-        expected = respBuilder.build();
-
         MockUMSServiceCallStreamObserverImpl<GetActorWorkloadCredentialsRequest, GetActorWorkloadCredentialsResponse> responseObserver
             = new MockUMSServiceCallStreamObserverImpl();
 
-
         underTest.getActorWorkloadCredentials(req, responseObserver);
-        GetActorWorkloadCredentialsResponse actualResp = responseObserver.getResponse();
-        Assert.assertEquals(expected, actualResp);
+        Assert.assertNotNull("Response must not be null", responseObserver.getResponse());
     }
 
     private static class MockUMSServiceCallStreamObserverImpl<T, R> implements StreamObserver {

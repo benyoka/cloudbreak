@@ -291,9 +291,8 @@ public class FreeIpaClient {
 
     public Config getConfig() throws FreeIpaClientException {
         Map<String, Object> params = new HashMap<>();
-        params.put("all", Boolean.TRUE);
-        Config config = (Config) invoke("config_show", List.of(), params, Config.class).getResult();
-        return config;
+        params.put("all", true);
+        return (Config) invoke("config_show", List.of(), params, Config.class).getResult();
     }
 
     public void setUsernameLength(int length) throws FreeIpaClientException {

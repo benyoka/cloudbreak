@@ -512,25 +512,7 @@ public class MockUserManagementService extends UserManagementGrpc.UserManagement
                                             io.grpc.stub.StreamObserver<com.cloudera.thunderhead.service.usermanagement
                                                 .UserManagementProto.GetActorWorkloadCredentialsResponse> responseObserver) {
 
-        final int keyType17 = 17;
-        final int keyType18 = 18;
-        final int saltType = 4;
         GetActorWorkloadCredentialsResponse.Builder respBuilder = GetActorWorkloadCredentialsResponse.getDefaultInstance().toBuilder();
-        respBuilder.addKerberosKeysBuilder(0)
-            .setSaltType(saltType)
-            .setKeyType(keyType17)
-            .setKeyValue("testKeyValue17")
-            .setSaltValue("NonIodizedGrainOfSalt")
-            .build();
-
-        respBuilder.addKerberosKeysBuilder(1)
-            .setSaltType(saltType)
-            .setKeyType(keyType18)
-            .setKeyValue("testKeyValue18")
-            .setSaltValue("IodizedGrainOfSalt")
-            .build();
-
-        respBuilder.setPasswordHash("015353916be1489289e59166124bbcf21c78595f3717f71b079c469c513e05e7");
         responseObserver.onNext(respBuilder.build());
         responseObserver.onCompleted();
     }

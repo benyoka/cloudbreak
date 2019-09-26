@@ -2,6 +2,9 @@ package com.sequenceiq.freeipa.util;
 
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ActorKerberosKey;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
@@ -11,7 +14,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 
-public final class ASNEncoder {
+public final class KrbKeySetEncoder {
 
     private static final int TAG_0 = 0;
 
@@ -25,11 +28,11 @@ public final class ASNEncoder {
 
     private static final int NUM_KEYS = 2;
 
-    private ASNEncoder() {
+    private KrbKeySetEncoder() {
 
     }
 
-    private static DERSequence makeSalt(int type, String salt) throws Exception {
+    private static DERSequence makeSalt(int type, String salt) throws UnsupportedEncodingException {
         return new DERSequence(new ASN1Encodable[]{
             new DERTaggedObject(true, TAG_0, new DERInteger(type)),
             new DERTaggedObject(true, TAG_1, new DEROctetString(salt.getBytes("UTF-8")))
@@ -50,26 +53,34 @@ public final class ASNEncoder {
         });
     }
 
-    public static String getASNEncodedKrbPrincipalKey(List<ActorKerberosKey> keys) throws Exception {
+    public static String getASNEncodedKrbPrincipalKey(List<ActorKerberosKey> keys) throws IOException {
         if (keys == null || keys.size() < NUM_KEYS) {
             throw new IllegalArgumentException("Invalid kerberos keys provided");
         }
 
         ASN1Encodable[] asn1Encodables = new ASN1Encodable[NUM_KEYS];
 
-        for (int i = 0; i < NUM_KEYS; i++) {
+        for (int i = 0; i < keys.size(); i++) {
             ActorKerberosKey key = keys.get(i);
-            byte[] byteValue = Base64.getDecoder().decode(key.getKeyValue().getBytes("UTF-8"));
+            byte[] byteValue = Base64.getDecoder().decode(key.getKeyValue().getBytes(StandardCharsets.UTF_8));
             asn1Encodables[i] = makeKrbKey(makeSalt(key.getSaltType(), key.getSaltValue()), makeEncryptionKey(key.getKeyType(), byteValue));
         }
 
         DERSequence krbKeys = new DERSequence(asn1Encodables);
 
         DERSequence krbKeySet = new DERSequence(new ASN1Encodable[]{
+            // attribute-major-vno
             new DERTaggedObject(true, TAG_0, new DERInteger(1)),
+
+            // attribute-minor-vno
             new DERTaggedObject(true, TAG_1, new DERInteger(1)),
+
+            // kvno
             new DERTaggedObject(true, TAG_2, new DERInteger(1)),
+
+            // mkvno
             new DERTaggedObject(true, TAG_3, new DERInteger(1)),
+
             new DERTaggedObject(true, TAG_4, krbKeys)
         });
         return Base64.getEncoder().encodeToString(krbKeySet.getEncoded());

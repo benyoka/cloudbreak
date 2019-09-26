@@ -49,12 +49,13 @@ public class UmsUsersStateProvider {
                                                             Set<String> userCrns, Set<String> machineUserCrns) {
         try {
             final Optional<String> requestIdOptional;
-            if (!Optional.ofNullable(MDCBuilder.getMdcContextMap().get(LoggerContextKey.REQUEST_ID.toString())).isPresent()) {
+            if (MDCBuilder.getMdcContextMap().containsKey(LoggerContextKey.REQUEST_ID.toString())) {
+                requestIdOptional = Optional.ofNullable(MDCBuilder.getMdcContextMap().get(LoggerContextKey.REQUEST_ID.toString()));
+            } else {
                 requestIdOptional = Optional.of(UUID.randomUUID().toString());
                 LOGGER.debug("No requestId found. Setting request id to new UUID [{}]", requestIdOptional);
-            } else {
-                requestIdOptional = Optional.ofNullable(MDCBuilder.getMdcContextMap().get(LoggerContextKey.REQUEST_ID.toString()));
             }
+
             requestIdThreadLocal.set(requestIdOptional.get());
             LOGGER.debug("Getting UMS state for environments {} with requestId {}", environmentCrns, requestIdOptional);
 
