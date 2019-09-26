@@ -26,6 +26,7 @@ import com.sequenceiq.periscope.api.model.ClusterState;
 import com.sequenceiq.periscope.domain.Cluster;
 import com.sequenceiq.periscope.domain.PeriscopeUser;
 import com.sequenceiq.periscope.monitor.event.UpdateFailedEvent;
+import com.sequenceiq.periscope.repository.FailedNodeRepository;
 import com.sequenceiq.periscope.service.ClusterService;
 import com.sequenceiq.periscope.utils.StackResponseUtils;
 
@@ -42,6 +43,9 @@ public class UpdateFailedHandlerTest {
 
     @Mock
     private StackResponseUtils stackResponseUtils;
+
+    @Mock
+    private FailedNodeRepository failedNodeRepository;
 
     @InjectMocks
     private UpdateFailedHandler underTest;
