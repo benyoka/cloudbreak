@@ -33,7 +33,7 @@ import com.sequenceiq.cloudbreak.cm.polling.ClouderaManagerCommandPollerObject;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 
 @ExtendWith(MockitoExtension.class)
-class ClouderaManagerTemplateInstallCheckerTest {
+class ClouderaManagerTemplateInstallationCheckerTest {
 
     private static final BigDecimal TEMPLATE_INSTALL_ID = new BigDecimal(1);
 
@@ -52,7 +52,7 @@ class ClouderaManagerTemplateInstallCheckerTest {
     private static final String FIRST_RUN_NAME = "First Run";
 
     @InjectMocks
-    private ClouderaManagerTemplateInstallChecker underTest;
+    private ClouderaManagerTemplateInstallationChecker underTest;
 
     @Mock
     private ApiClient apiClient;
